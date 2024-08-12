@@ -10,7 +10,10 @@ import SwiftUI
 
 struct ARViewWrapper: UIViewRepresentable {
     func makeUIView(context: Context) -> some UIView {
-        ARView(frame: .zero)
+        let view = ARView(frame: .zero)
+        let anchor = try! Experience.loadCube()
+        view.scene.addAnchor(anchor)
+        return view
     }
 
     func updateUIView(_ uiView: UIViewType, context: Context) {}
