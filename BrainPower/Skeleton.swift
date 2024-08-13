@@ -9,80 +9,81 @@ import ARKit
 import RealityKit
 
 class Skeleton: Entity {
-    var joints: [String: Entity] = [:]
-    var bones: [String: Entity] = [:]
+    var joints: [JointType: Entity] = [:]
+    var bones: [BoneType: Entity] = [:]
 
     required init(for bodyAnchor: ARBodyAnchor) {
         super.init()
-
-        for jointName in ARSkeletonDefinition.defaultBody3D.jointNames {
-            var jointRadius: Float = 0.05
-            var jointColor: UIColor = .green
-
-            switch jointName {
-            case "neck_1_joint", "neck_2_joint", "neck_3_joint", "neck_4_joint", "head_joint", "left_shoulder_1_joint", "right_shoulder_1_joint":
-                jointRadius *= 0.37
-            case "jaw_joint", "chin_joint", "left_eye_joint", "left_eyeLowerLid_joint", "left_eyeUpperLid_joint", "left_eyeball_joint", "nose_joint", "right_eye_joint", "right_eyeLowerLid_joint", "right_eyeUpperLid_joint", "right_eyeball_joint":
-                jointRadius *= 0.17
-                jointColor = .yellow
-            case _ where jointName.hasPrefix("spine_"):
-                jointRadius *= 0.57
-            case "left_hand_joint", "right_hand_joint":
-                jointRadius *= 0.87
-                jointColor = .green
-            case _ where jointName.hasPrefix("left_hand") || jointName.hasPrefix("right_hand"):
-                jointRadius *= 0.17
-                jointColor = .yellow
-            case _ where jointName.hasPrefix("left_toes") || jointName.hasPrefix("right_toes"):
-                jointRadius *= 0.37
-                jointColor = .yellow
-            default:
-                jointRadius = 0.05
-                jointColor = .green
-            }
-
-            let jointEntity = createJoint(radius: jointRadius, color: jointColor)
-            joints[jointName] = jointEntity
-            self.addChild(jointEntity)
-        }
-
-        for bone in Bones.allCases {
-            guard let skeletonBone = createSkeletonBone(bone: bone, bodyAnchor: bodyAnchor) else {
-                continue
-            }
-
-            let boneEntity = createBoneEntity(for: skeletonBone)
-            bones[bone.name] = boneEntity
-            self.addChild(boneEntity)
-        }
+        setup(for: bodyAnchor)
     }
 
     required init() {
         fatalError("init() has not been implemented.")
     }
 
+    private func setup(for bodyAnchor: ARBodyAnchor) {
+        let rootPosition = simd_make_float3(bodyAnchor.transform.columns.3)
+
+        joints = Dictionary(
+            uniqueKeysWithValues: JointType.allCases.map { jointType in
+                (jointType, createJoint(radius: jointType.radius, color: jointType.color))
+            }
+        )
+
+        joints.forEach { [weak self] _, entity in
+            self?.addChild(entity)
+        }
+
+        bones = Dictionary(
+            uniqueKeysWithValues: BoneType.allCases.compactMap { boneType in
+                guard let fromTransform = bodyAnchor.skeleton.modelTransform(for: boneType.from.arSkeletonJointName),
+                      let toTransform = bodyAnchor.skeleton.modelTransform(for: boneType.to.arSkeletonJointName) else {
+                    return nil
+                }
+                return (
+                    boneType,
+                    createBoneEntity(
+                        for: simd_distance(
+                            simd_make_float3(fromTransform.columns.3) + rootPosition,
+                            simd_make_float3(toTransform.columns.3) + rootPosition
+                        )
+                    )
+                )
+            }
+        )
+
+        bones.forEach { [weak self] _ , entity in
+            self?.addChild(entity)
+        }
+    }
+
     func update(with bodyAnchor: ARBodyAnchor) {
         let rootPosition = simd_make_float3(bodyAnchor.transform.columns.3)
 
-        for jointName in ARSkeletonDefinition.defaultBody3D.jointNames {
-            if let jointEntity = joints[jointName],
-               let jointEntityTransform = bodyAnchor.skeleton.modelTransform(for: ARSkeleton.JointName(rawValue: jointName)) {
-                let jointEntityOffsetFromRoot = simd_make_float3(jointEntityTransform.columns.3)
-                jointEntity.position = jointEntityOffsetFromRoot + rootPosition
-                jointEntity.orientation = Transform(matrix: jointEntityTransform).rotation
-            }
-        }
-
-        for bone in Bones.allCases {
-            let boneName = bone.name
-
-            guard let entity = bones[boneName],
-                  let skeletonBone = createSkeletonBone(bone: bone, bodyAnchor: bodyAnchor) else {
+        for jointType in JointType.allCases {
+            guard let jointEntity = joints[jointType],
+                  let transform = bodyAnchor.skeleton.modelTransform(for: jointType.arSkeletonJointName) else {
                 continue
             }
+            jointEntity.position = simd_make_float3(transform.columns.3) + rootPosition
+            jointEntity.orientation = Transform(matrix: transform).rotation
+        }
 
-            entity.position = skeletonBone.center
-            entity.look(at: skeletonBone.to.position, from: skeletonBone.center, relativeTo: nil)
+        for boneType in BoneType.allCases {
+            guard let boneEntity = bones[boneType],
+                  let fromTransform = bodyAnchor.skeleton.modelTransform(for: boneType.from.arSkeletonJointName),
+                  let toTransform = bodyAnchor.skeleton.modelTransform(for: boneType.to.arSkeletonJointName) else {
+                continue
+            }
+            let fromPosition = simd_make_float3(fromTransform.columns.3) + rootPosition
+            let toPosition = simd_make_float3(toTransform.columns.3) + rootPosition
+            let center: SIMD3<Float> = [
+                (fromPosition.x + toPosition.x) / 2.0,
+                (fromPosition.y + toPosition.y) / 2.0,
+                (fromPosition.z + toPosition.z) / 2.0
+            ]
+            boneEntity.position = center
+            boneEntity.look(at: toPosition, from: center, relativeTo: nil)
         }
     }
 
@@ -90,42 +91,67 @@ class Skeleton: Entity {
         let mesh = MeshResource.generateSphere(radius: radius)
         let material = SimpleMaterial(color: color, roughness: 0.37, isMetallic: true)
         let entity = ModelEntity(mesh: mesh, materials: [material])
-
         return entity
     }
 
-    private func createSkeletonBone(bone: Bones, bodyAnchor: ARBodyAnchor) -> Bone? {
-        guard let fromJointEntityTransform = bodyAnchor.skeleton.modelTransform(
-            for: ARSkeleton.JointName(rawValue: bone.jointFromName)
-        ),
-              let toJointEntityTransform = bodyAnchor.skeleton.modelTransform(
-                for: ARSkeleton.JointName(rawValue: bone.jointToName)
-              ) else {
-            return nil
-        }
-
-        let rootPosition = simd_make_float3(bodyAnchor.transform.columns.3)
-
-        let jointFromEntityOffsetFromRoot = simd_make_float3(fromJointEntityTransform.columns.3)
-        let jointFromEntityPosition = jointFromEntityOffsetFromRoot + rootPosition
-
-        let jointToEntityOffsetFromRoot = simd_make_float3(toJointEntityTransform.columns.3)
-        let jointToEntityPosition = jointToEntityOffsetFromRoot + rootPosition
-
-        let from = Joint(name: bone.jointFromName, position: jointFromEntityPosition)
-        let to = Joint(name: bone.jointToName, position: jointToEntityPosition)
-        return Bone(from: from, to: to)
-    }
-
-    private func createBoneEntity(for bone: Bone, diameter: Float = 0.04, color: UIColor = .white) -> Entity {
-        let mesh = MeshResource.generateBox(
-            size: [diameter, diameter, bone.length],
-            cornerRadius: diameter / 2
-        )
-        let material = SimpleMaterial(color: color, roughness: 0.47, isMetallic: true)
+    private func createBoneEntity(for length: Float = .zero, diameter: Float = 0.04, color: UIColor = .white) -> Entity {
+        let mesh = MeshResource.generateBox(size: [diameter, diameter, length], cornerRadius: diameter / 2)
+        let material = SimpleMaterial(color: color, roughness: 0.47, isMetallic: false)
         let entity = ModelEntity(mesh: mesh, materials: [material])
-
         return entity
     }
+}
 
+extension JointType {
+    var arSkeletonJointName: ARSkeleton.JointName {
+        ARSkeleton.JointName(rawValue: rawValue)
+    }
+
+    var radius: Float {
+        switch self {
+        case .neck1, .neck2, .neck3, .neck4, .head, .leftShoulder, .rightShoulder:
+            return 0.05 * 0.37
+        case .jaw, .chin, .leftEye, .leftEyeLowerLid, .leftEyeUpperLid, .leftEyeball, .nose, .rightEye, .rightEyeLowerLid, .rightEyeUpperLid, .rightEyeball:
+            return 0.05 * 0.17
+        case .spine1, .spine2, .spine3, .spine4, .spine5, .spine6, .spine7:
+            return 0.05 * 0.57
+        case .leftHand, .rightHand:
+            return 0.05 * 0.87
+        case .leftHandIndexStart, .leftHandIndex1, .leftHandIndex2, .leftHandIndex3, .leftHandIndexEnd,
+             .leftHandMidStart, .leftHandMid1, .leftHandMid2, .leftHandMid3, .leftHandMidEnd,
+             .leftHandPinkyStart, .leftHandPinky1, .leftHandPinky2, .leftHandPinky3, .leftHandPinkyEnd,
+             .leftHandRingStart, .leftHandRing1, .leftHandRing2, .leftHandRing3, .leftHandRingEnd,
+             .leftHandThumbStart, .leftHandThumb1, .leftHandThumb2, .leftHandThumbEnd,
+             .rightHandIndexStart, .rightHandIndex1, .rightHandIndex2, .rightHandIndex3, .rightHandIndexEnd,
+             .rightHandMidStart, .rightHandMid1, .rightHandMid2, .rightHandMid3, .rightHandMidEnd,
+             .rightHandPinkyStart, .rightHandPinky1, .rightHandPinky2, .rightHandPinky3, .rightHandPinkyEnd,
+             .rightHandRingStart, .rightHandRing1, .rightHandRing2, .rightHandRing3, .rightHandRingEnd,
+             .rightHandThumbStart, .rightHandThumb1, .rightHandThumb2, .rightHandThumbEnd:
+            return 0.05 * 0.17
+        case .leftToes, .leftToesEnd, .rightToes, .rightToesEnd:
+            return 0.05 * 0.37
+        default:
+            return 0.05
+        }
+    }
+
+    var color: UIColor {
+        switch self {
+        case .jaw, .chin, .leftEye, .leftEyeLowerLid, .leftEyeUpperLid, .leftEyeball, .nose, .rightEye, .rightEyeLowerLid, .rightEyeUpperLid, .rightEyeball,
+             .leftHandIndexStart, .leftHandIndex1, .leftHandIndex2, .leftHandIndex3, .leftHandIndexEnd,
+             .leftHandMidStart, .leftHandMid1, .leftHandMid2, .leftHandMid3, .leftHandMidEnd,
+             .leftHandPinkyStart, .leftHandPinky1, .leftHandPinky2, .leftHandPinky3, .leftHandPinkyEnd,
+             .leftHandRingStart, .leftHandRing1, .leftHandRing2, .leftHandRing3, .leftHandRingEnd,
+             .leftHandThumbStart, .leftHandThumb1, .leftHandThumb2, .leftHandThumbEnd,
+             .rightHandIndexStart, .rightHandIndex1, .rightHandIndex2, .rightHandIndex3, .rightHandIndexEnd,
+             .rightHandMidStart, .rightHandMid1, .rightHandMid2, .rightHandMid3, .rightHandMidEnd,
+             .rightHandPinkyStart, .rightHandPinky1, .rightHandPinky2, .rightHandPinky3, .rightHandPinkyEnd,
+             .rightHandRingStart, .rightHandRing1, .rightHandRing2, .rightHandRing3, .rightHandRingEnd,
+             .rightHandThumbStart, .rightHandThumb1, .rightHandThumb2, .rightHandThumbEnd,
+             .leftToes, .leftToesEnd, .rightToes, .rightToesEnd:
+            return .yellow
+        default:
+            return .green
+        }
+    }
 }

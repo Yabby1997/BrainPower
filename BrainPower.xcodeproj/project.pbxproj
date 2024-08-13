@@ -9,28 +9,26 @@
 /* Begin PBXBuildFile section */
 		CE43EF4A2C6A467B007FBAFB /* ARViewWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE43EF492C6A467B007FBAFB /* ARViewWrapper.swift */; };
 		CE43EF4C2C6A4AB3007FBAFB /* Experience.rcproject in Sources */ = {isa = PBXBuildFile; fileRef = CE43EF4B2C6A4AB3007FBAFB /* Experience.rcproject */; };
-		CE43EF4E2C6A588D007FBAFB /* Joint.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE43EF4D2C6A588D007FBAFB /* Joint.swift */; };
 		CE43EF502C6A61F6007FBAFB /* Skeleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE43EF4F2C6A61F6007FBAFB /* Skeleton.swift */; };
-		CE43EF522C6A7032007FBAFB /* Bone.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE43EF512C6A7032007FBAFB /* Bone.swift */; };
-		CE43EF542C6A7041007FBAFB /* Bones.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE43EF532C6A7041007FBAFB /* Bones.swift */; };
 		CE7D35A32C6A43D700BA9C71 /* BrainPowerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7D35A22C6A43D700BA9C71 /* BrainPowerApp.swift */; };
 		CE7D35A52C6A43D700BA9C71 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7D35A42C6A43D700BA9C71 /* ContentView.swift */; };
 		CE7D35A72C6A43D800BA9C71 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE7D35A62C6A43D800BA9C71 /* Assets.xcassets */; };
 		CE7D35AA2C6A43D800BA9C71 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE7D35A92C6A43D800BA9C71 /* Preview Assets.xcassets */; };
+		CEEA685A2C6B9A3200138069 /* JointType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEEA68592C6B9A3200138069 /* JointType.swift */; };
+		CEEA685C2C6B9A5400138069 /* BoneType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEEA685B2C6B9A5400138069 /* BoneType.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		CE43EF492C6A467B007FBAFB /* ARViewWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARViewWrapper.swift; sourceTree = "<group>"; };
 		CE43EF4B2C6A4AB3007FBAFB /* Experience.rcproject */ = {isa = PBXFileReference; lastKnownFileType = file.rcproject; path = Experience.rcproject; sourceTree = "<group>"; };
-		CE43EF4D2C6A588D007FBAFB /* Joint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Joint.swift; sourceTree = "<group>"; };
 		CE43EF4F2C6A61F6007FBAFB /* Skeleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Skeleton.swift; sourceTree = "<group>"; };
-		CE43EF512C6A7032007FBAFB /* Bone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bone.swift; sourceTree = "<group>"; };
-		CE43EF532C6A7041007FBAFB /* Bones.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bones.swift; sourceTree = "<group>"; };
 		CE7D359F2C6A43D700BA9C71 /* BrainPower.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BrainPower.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE7D35A22C6A43D700BA9C71 /* BrainPowerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrainPowerApp.swift; sourceTree = "<group>"; };
 		CE7D35A42C6A43D700BA9C71 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		CE7D35A62C6A43D800BA9C71 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CE7D35A92C6A43D800BA9C71 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		CEEA68592C6B9A3200138069 /* JointType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JointType.swift; sourceTree = "<group>"; };
+		CEEA685B2C6B9A5400138069 /* BoneType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoneType.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,10 +65,9 @@
 				CE7D35A22C6A43D700BA9C71 /* BrainPowerApp.swift */,
 				CE7D35A42C6A43D700BA9C71 /* ContentView.swift */,
 				CE43EF492C6A467B007FBAFB /* ARViewWrapper.swift */,
-				CE43EF4D2C6A588D007FBAFB /* Joint.swift */,
-				CE43EF532C6A7041007FBAFB /* Bones.swift */,
-				CE43EF512C6A7032007FBAFB /* Bone.swift */,
 				CE43EF4F2C6A61F6007FBAFB /* Skeleton.swift */,
+				CEEA685B2C6B9A5400138069 /* BoneType.swift */,
+				CEEA68592C6B9A3200138069 /* JointType.swift */,
 				CE7D35A62C6A43D800BA9C71 /* Assets.xcassets */,
 				CE7D35A82C6A43D800BA9C71 /* Preview Content */,
 			);
@@ -155,14 +152,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CE43EF522C6A7032007FBAFB /* Bone.swift in Sources */,
 				CE43EF502C6A61F6007FBAFB /* Skeleton.swift in Sources */,
 				CE7D35A52C6A43D700BA9C71 /* ContentView.swift in Sources */,
-				CE43EF4E2C6A588D007FBAFB /* Joint.swift in Sources */,
+				CEEA685C2C6B9A5400138069 /* BoneType.swift in Sources */,
 				CE7D35A32C6A43D700BA9C71 /* BrainPowerApp.swift in Sources */,
-				CE43EF542C6A7041007FBAFB /* Bones.swift in Sources */,
 				CE43EF4C2C6A4AB3007FBAFB /* Experience.rcproject in Sources */,
 				CE43EF4A2C6A467B007FBAFB /* ARViewWrapper.swift in Sources */,
+				CEEA685A2C6B9A3200138069 /* JointType.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

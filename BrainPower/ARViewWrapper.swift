@@ -15,9 +15,12 @@ struct ARViewWrapper: UIViewRepresentable {
     func makeUIView(context: Context) -> ARView {
         let view = ARView(frame: .zero)
         let bodyTrackingConfiguration = ARBodyTrackingConfiguration()
+        bodyTrackingConfiguration.planeDetection = .horizontal
         view.session.run(bodyTrackingConfiguration)
         view.session.delegate = context.coordinator
         view.scene.addAnchor(context.coordinator.bodyTrackingAnchor)
+//        let cubeAnchor = try! Experience.loadCube()
+//        view.scene.addAnchor(cubeAnchor)
         return view
     }
 
@@ -27,7 +30,7 @@ struct ARViewWrapper: UIViewRepresentable {
 
     class Coordinator: NSObject, ARSessionDelegate {
         var skeleton: Skeleton?
-        let bodyTrackingAnchor: AnchorEntity = AnchorEntity()
+        let bodyTrackingAnchor = AnchorEntity()
 
         public func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
             anchors.compactMap { $0 as? ARBodyAnchor }.forEach { [weak self] bodyAnchor in
