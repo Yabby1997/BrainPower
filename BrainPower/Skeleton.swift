@@ -47,10 +47,8 @@ class Skeleton: Entity {
                 )
                 let material = SimpleMaterial(color: .white, roughness: 0.47, isMetallic: false)
                 let entity = ModelEntity(mesh: mesh, materials: [material])
-                let centerPosition = fromPosition.centerPoint(to: toPosition)
-                entity.position = centerPosition
-                entity.look(at: toPosition, from: centerPosition, relativeTo: nil)
                 self?.addChild(entity)
+                entity.look(at: toPosition, from: fromPosition.centerPoint(to: toPosition), relativeTo: nil)
                 return (boneType, entity)
             }
         )
@@ -76,9 +74,7 @@ class Skeleton: Entity {
             }
             let fromPosition = from.position + rootPosition
             let toPosition = to.position + rootPosition
-            let centerPosition = fromPosition.centerPoint(to: toPosition)
-            boneEntity.position = centerPosition
-            boneEntity.look(at: toPosition, from: centerPosition, relativeTo: nil)
+            boneEntity.look(at: toPosition, from: fromPosition.centerPoint(to: toPosition), relativeTo: nil)
         }
     }
 }
