@@ -23,11 +23,22 @@ class Skeleton: Entity {
 
     private func setup(for bodyAnchor: ARBodyAnchor) {
         let rootPosition = simd_make_float3(bodyAnchor.transform.columns.3)
+        let jointCollisionGroup: CollisionGroup = CollisionGroup(rawValue: 1 << 0)
+        let boneCollisionGroup: CollisionGroup = CollisionGroup(rawValue: 1 << 1)
+
         joints = Dictionary(
             uniqueKeysWithValues: JointType.allCases.map { [weak self] jointType in
                 let mesh = MeshResource.generateSphere(radius: jointType.radius)
                 let material = SimpleMaterial(color: jointType.color, roughness: 0.37, isMetallic: true)
                 let entity = ModelEntity(mesh: mesh, materials: [material])
+                var collisionComponent = CollisionComponent(shapes: [.generateSphere(radius: jointType.radius)])
+                collisionComponent.filter = CollisionFilter(
+                    group: jointCollisionGroup,
+                    mask: [.all.subtracting(jointCollisionGroup).subtracting(boneCollisionGroup)]
+                )
+                entity.collision = collisionComponent
+                entity.physicsBody = .init(massProperties: .default, material: .default, mode: .static)
+                entity.name = jointType.rawValue
                 self?.addChild(entity)
                 return (jointType, entity)
             }
@@ -41,12 +52,18 @@ class Skeleton: Entity {
                 }
                 let fromPosition = from.position + rootPosition
                 let toPosition = to.position + rootPosition
-                let mesh = MeshResource.generateBox(
-                    size: [boneType.thickness, boneType.thickness, simd_distance(fromPosition, toPosition)],
-                    cornerRadius: boneType.thickness / 2.0
-                )
+                let size: simd_float3 = [boneType.thickness, boneType.thickness, simd_distance(fromPosition, toPosition)]
+                let mesh = MeshResource.generateBox(size: size, cornerRadius: boneType.thickness / 2.0)
                 let material = SimpleMaterial(color: .white, roughness: 0.47, isMetallic: false)
                 let entity = ModelEntity(mesh: mesh, materials: [material])
+                var collisionComponent = CollisionComponent(shapes: [.generateBox(size: size)])
+                collisionComponent.filter = CollisionFilter(
+                    group: boneCollisionGroup,
+                    mask: [.all.subtracting(jointCollisionGroup).subtracting(boneCollisionGroup)]
+                )
+                entity.collision = collisionComponent
+                entity.physicsBody = .init(massProperties: .default, material: .default, mode: .static)
+                entity.name = boneType.rawValue
                 self?.addChild(entity)
                 entity.look(at: toPosition, from: fromPosition.centerPoint(to: toPosition), relativeTo: nil)
                 return (boneType, entity)

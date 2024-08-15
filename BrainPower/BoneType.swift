@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum BoneType: CaseIterable {
+enum BoneType: String, CaseIterable {
     case spine1ToSpine2
     case spine2ToSpine3
     case spine3ToSpine4

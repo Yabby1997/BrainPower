@@ -8,9 +8,16 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State var debugString = "Debug"
+
     var body: some View {
-        ARViewWrapper()
-            .ignoresSafeArea()
+        ZStack {
+            ARViewWrapper(debugString: $debugString)
+            Text(debugString)
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .foregroundStyle(.yellow)
+        }
+        .ignoresSafeArea()
     }
 }
 
