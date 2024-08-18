@@ -24,10 +24,24 @@ struct ARViewWrapper: UIViewRepresentable {
         view.session.run(bodyTrackingConfiguration)
         view.session.delegate = context.coordinator
         view.scene.addAnchor(context.coordinator.bodyTrackingAnchor)
-        let wallAnchor = try! Experience.loadWall()
+
+        let wallAnchor = AnchorEntity()
+        let wallEntity = ModelEntity(
+            mesh: .generateBox(width: 1, height: 1, depth: 0.2, cornerRadius: 0.1),
+            materials: [
+                SimpleMaterial(color: .red, isMetallic: false)
+            ]
+        )
+        wallEntity.collision = .init(
+            shapes: [.generateBox(width: 1, height: 1, depth: 0.2)],
+            filter: .init(
+                group: .wall,
+                mask: .all.subtracting(.wall)
+            )
+        )
+        wallEntity.name = "Red Wall"
+        wallAnchor.addChild(wallEntity)
         view.scene.addAnchor(wallAnchor)
-        let redCube = try! Experience.loadRedCube()
-        view.scene.addAnchor(redCube)
         return view
     }
 
