@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CE43EF4A2C6A467B007FBAFB /* ARViewWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE43EF492C6A467B007FBAFB /* ARViewWrapper.swift */; };
+		CE2AC7232C778DDF004CED28 /* BrainPower.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2AC7222C778DDF004CED28 /* BrainPower.swift */; };
+		CE2AC7252C778E25004CED28 /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2AC7242C778E25004CED28 /* GameViewModel.swift */; };
+		CE43EF4A2C6A467B007FBAFB /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE43EF492C6A467B007FBAFB /* GameView.swift */; };
 		CE43EF4C2C6A4AB3007FBAFB /* Experience.rcproject in Sources */ = {isa = PBXBuildFile; fileRef = CE43EF4B2C6A4AB3007FBAFB /* Experience.rcproject */; };
 		CE43EF502C6A61F6007FBAFB /* Skeleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE43EF4F2C6A61F6007FBAFB /* Skeleton.swift */; };
 		CE7D35A32C6A43D700BA9C71 /* BrainPowerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7D35A22C6A43D700BA9C71 /* BrainPowerApp.swift */; };
@@ -20,7 +22,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		CE43EF492C6A467B007FBAFB /* ARViewWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARViewWrapper.swift; sourceTree = "<group>"; };
+		CE2AC7222C778DDF004CED28 /* BrainPower.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrainPower.swift; sourceTree = "<group>"; };
+		CE2AC7242C778E25004CED28 /* GameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewModel.swift; sourceTree = "<group>"; };
+		CE43EF492C6A467B007FBAFB /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
 		CE43EF4B2C6A4AB3007FBAFB /* Experience.rcproject */ = {isa = PBXFileReference; lastKnownFileType = file.rcproject; path = Experience.rcproject; sourceTree = "<group>"; };
 		CE43EF4F2C6A61F6007FBAFB /* Skeleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Skeleton.swift; sourceTree = "<group>"; };
 		CE7D359F2C6A43D700BA9C71 /* BrainPower.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BrainPower.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -67,7 +71,9 @@
 				CEE25B5F2C721E4000CB91A2 /* CollisionGroup+Extensions.swift */,
 				CE7D35A22C6A43D700BA9C71 /* BrainPowerApp.swift */,
 				CE7D35A42C6A43D700BA9C71 /* ContentView.swift */,
-				CE43EF492C6A467B007FBAFB /* ARViewWrapper.swift */,
+				CE43EF492C6A467B007FBAFB /* GameView.swift */,
+				CE2AC7242C778E25004CED28 /* GameViewModel.swift */,
+				CE2AC7222C778DDF004CED28 /* BrainPower.swift */,
 				CE43EF4F2C6A61F6007FBAFB /* Skeleton.swift */,
 				CEEA685B2C6B9A5400138069 /* BoneType.swift */,
 				CEEA68592C6B9A3200138069 /* JointType.swift */,
@@ -158,10 +164,12 @@
 				CE43EF502C6A61F6007FBAFB /* Skeleton.swift in Sources */,
 				CE7D35A52C6A43D700BA9C71 /* ContentView.swift in Sources */,
 				CEEA685C2C6B9A5400138069 /* BoneType.swift in Sources */,
+				CE2AC7232C778DDF004CED28 /* BrainPower.swift in Sources */,
 				CE7D35A32C6A43D700BA9C71 /* BrainPowerApp.swift in Sources */,
 				CE43EF4C2C6A4AB3007FBAFB /* Experience.rcproject in Sources */,
-				CE43EF4A2C6A467B007FBAFB /* ARViewWrapper.swift in Sources */,
+				CE43EF4A2C6A467B007FBAFB /* GameView.swift in Sources */,
 				CEE25B602C721E4000CB91A2 /* CollisionGroup+Extensions.swift in Sources */,
+				CE2AC7252C778E25004CED28 /* GameViewModel.swift in Sources */,
 				CEEA685A2C6B9A3200138069 /* JointType.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
