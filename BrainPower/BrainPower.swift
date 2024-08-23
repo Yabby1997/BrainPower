@@ -10,8 +10,8 @@ import Combine
 import Foundation
 
 class BrainPower: NSObject {
-    private var skeletonAnchor: AnchorEntity?
-    private var skeleton: Skeleton?
+    private var character: BodyTrackedEntity?
+    private let characterAnchor = AnchorEntity()
     private var gamePlaneAnchor: AnchorEntity?
     private var gamePlane: ModelEntity?
     private var isGamePlaneFixed = false
@@ -23,10 +23,10 @@ class BrainPower: NSObject {
 
     /// Session for game.
     let session: ARSession = {
-        let bodyTrackingConfiguration = ARBodyTrackingConfiguration()
-        bodyTrackingConfiguration.planeDetection = .horizontal
+        let config = ARBodyTrackingConfiguration()
+        config.planeDetection = .horizontal
         let session = ARSession()
-        session.run(bodyTrackingConfiguration)
+        session.run(config)
         return session
     }()
 
@@ -38,11 +38,29 @@ class BrainPower: NSObject {
 
     func setup(scene: Scene) {
         self.scene = scene
+        scene.addAnchor(characterAnchor)
 
         scene.subscribe(to: CollisionEvents.Began.self) { [weak self] event in
             self?.debugStringSubject.send("\(event.entityA.name) just collide with \(event.entityB.name)")
         }
         .store(in: &cancellables)
+
+        Entity.loadBodyTrackedAsync(named: "robot")
+            .sink(
+                receiveCompletion: { completion in
+                    switch completion {
+                    case .finished:
+                        print("character model loaded successfully.")
+                    case let .failure(error):
+                        print("failed to load character model due to an error: \(error.localizedDescription)")
+                    }
+                },
+                receiveValue: { [weak self] character in
+                    character.scale = [1, 1, 1]
+                    self?.character = character
+                }
+            )
+            .store(in: &cancellables)
     }
 
     func startGame() {
@@ -103,16 +121,6 @@ extension BrainPower: ARSessionDelegate {
                 scene?.addAnchor(gamePlaneAnchor)
                 self.gamePlane = gamePlane
                 self.gamePlaneAnchor = gamePlaneAnchor
-            } else if let bodyAnchor = anchor as? ARBodyAnchor {
-                guard skeleton == nil else { return }
-                let skeletonAnchor = AnchorEntity(anchor: bodyAnchor)
-                skeletonAnchor.position = simd_make_float3(bodyAnchor.transform.columns.3)
-                skeletonAnchor.orientation = Transform(matrix: bodyAnchor.transform).rotation
-                let skeleton = Skeleton(for: bodyAnchor)
-                skeletonAnchor.addChild(skeleton)
-                scene?.addAnchor(skeletonAnchor)
-                self.skeleton = skeleton
-                self.skeletonAnchor = skeletonAnchor
             }
         }
     }
@@ -120,10 +128,12 @@ extension BrainPower: ARSessionDelegate {
     public func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
         for anchor in anchors {
             if let bodyAnchor = anchor as? ARBodyAnchor {
-                let rotation = Transform(matrix: bodyAnchor.transform).rotation
-                skeletonAnchor?.position = simd_make_float3(bodyAnchor.transform.columns.3)
-                skeletonAnchor?.orientation = rotation
-                skeleton?.update(with: bodyAnchor)
+                characterAnchor.position = simd_make_float3(bodyAnchor.transform.columns.3)
+                characterAnchor.orientation = Transform(matrix: bodyAnchor.transform).rotation
+                if let character, character.parent == nil {
+                    characterAnchor.addChild(character)
+                    print("character added on anchor")
+                }
             }
         }
     }
