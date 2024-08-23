@@ -22,13 +22,17 @@ class Skeleton: Entity {
     }
 
     private func setup(for bodyAnchor: ARBodyAnchor) {
-        let rootPosition = simd_make_float3(bodyAnchor.transform.columns.3)
-
         joints = Dictionary(
-            uniqueKeysWithValues: JointType.allCases.map { [weak self] jointType in
+            uniqueKeysWithValues: JointType.allCases.compactMap { [weak self] jointType in
+                guard let self,
+                      let transform = bodyAnchor.skeleton.modelTransform(for: jointType.arSkeletonJointName) else {
+                    return nil
+                }
                 let mesh = MeshResource.generateSphere(radius: jointType.radius)
                 let material = SimpleMaterial(color: jointType.color, roughness: 0.37, isMetallic: true)
                 let entity = ModelEntity(mesh: mesh, materials: [material])
+                entity.name = jointType.rawValue
+                entity.physicsBody = .init(massProperties: .default, material: .default, mode: .static)
                 entity.collision = .init(
                     shapes: [.generateSphere(radius: jointType.radius)],
                     filter: .init(
@@ -36,25 +40,29 @@ class Skeleton: Entity {
                         mask: .all.subtracting(.skeleton)
                     )
                 )
-                entity.physicsBody = .init(massProperties: .default, material: .default, mode: .static)
-                entity.name = jointType.rawValue
-                self?.addChild(entity)
+                entity.setPosition(transform.position, relativeTo: self)
+                addChild(entity)
                 return (jointType, entity)
             }
         )
 
         bones = Dictionary(
             uniqueKeysWithValues: BoneType.allCases.compactMap { [weak self] boneType in
-                guard let from = bodyAnchor.skeleton.modelTransform(for: boneType.from.arSkeletonJointName),
+                guard let self,
+                      let from = bodyAnchor.skeleton.modelTransform(for: boneType.from.arSkeletonJointName),
                       let to = bodyAnchor.skeleton.modelTransform(for: boneType.to.arSkeletonJointName) else {
                     return nil
                 }
-                let fromPosition = from.position + rootPosition
-                let toPosition = to.position + rootPosition
-                let size: simd_float3 = [boneType.thickness, boneType.thickness, simd_distance(fromPosition, toPosition)]
+                let size: simd_float3 = [
+                    boneType.thickness,
+                    boneType.thickness,
+                    simd_distance(from.position, to.position)
+                ]
                 let mesh = MeshResource.generateBox(size: size, cornerRadius: boneType.thickness / 2.0)
                 let material = SimpleMaterial(color: .white, roughness: 0.47, isMetallic: false)
                 let entity = ModelEntity(mesh: mesh, materials: [material])
+                entity.name = boneType.rawValue
+                entity.physicsBody = .init(massProperties: .default, material: .default, mode: .static)
                 entity.collision = .init(
                     shapes: [.generateBox(size: size)],
                     filter: .init(
@@ -62,25 +70,24 @@ class Skeleton: Entity {
                         mask: .all.subtracting(.skeleton)
                     )
                 )
-                entity.physicsBody = .init(massProperties: .default, material: .default, mode: .static)
-                entity.name = boneType.rawValue
-                self?.addChild(entity)
-                entity.look(at: toPosition, from: fromPosition.centerPoint(to: toPosition), relativeTo: nil)
+                entity.look(
+                    at: to.position,
+                    from: from.position.centerPoint(to: to.position),
+                    relativeTo: self
+                )
+                addChild(entity)
                 return (boneType, entity)
             }
         )
     }
 
     func update(with bodyAnchor: ARBodyAnchor) {
-        let rootPosition = simd_make_float3(bodyAnchor.transform.columns.3)
-
         for jointType in JointType.allCases {
             guard let jointEntity = joints[jointType],
                   let transform = bodyAnchor.skeleton.modelTransform(for: jointType.arSkeletonJointName) else {
                 continue
             }
-            jointEntity.position = transform.position + rootPosition
-            jointEntity.orientation = Transform(matrix: transform).rotation
+            jointEntity.setPosition(transform.position, relativeTo: self)
         }
 
         for boneType in BoneType.allCases {
@@ -89,9 +96,11 @@ class Skeleton: Entity {
                   let to = bodyAnchor.skeleton.modelTransform(for: boneType.to.arSkeletonJointName) else {
                 continue
             }
-            let fromPosition = from.position + rootPosition
-            let toPosition = to.position + rootPosition
-            boneEntity.look(at: toPosition, from: fromPosition.centerPoint(to: toPosition), relativeTo: nil)
+            boneEntity.look(
+                at: to.position,
+                from: from.position.centerPoint(to: to.position),
+                relativeTo: self
+            )
         }
     }
 }

@@ -10,7 +10,7 @@ import Combine
 import Foundation
 
 class BrainPower: NSObject {
-    private var skeletonAnchor: AnchorEntity?
+    private let skeletonAnchor = AnchorEntity()
     private var skeleton: Skeleton?
     private var gamePlaneAnchor: AnchorEntity?
     private var gamePlane: ModelEntity?
@@ -37,12 +37,14 @@ class BrainPower: NSObject {
     }
 
     func setup(scene: Scene) {
-        self.scene = scene
+        scene.addAnchor(skeletonAnchor)
 
         scene.subscribe(to: CollisionEvents.Began.self) { [weak self] event in
             self?.debugStringSubject.send("\(event.entityA.name) just collide with \(event.entityB.name)")
         }
         .store(in: &cancellables)
+        
+        self.scene = scene
     }
 
     func startGame() {
@@ -105,14 +107,10 @@ extension BrainPower: ARSessionDelegate {
                 self.gamePlaneAnchor = gamePlaneAnchor
             } else if let bodyAnchor = anchor as? ARBodyAnchor {
                 guard skeleton == nil else { return }
-                let skeletonAnchor = AnchorEntity(anchor: bodyAnchor)
-                skeletonAnchor.position = simd_make_float3(bodyAnchor.transform.columns.3)
-                skeletonAnchor.orientation = Transform(matrix: bodyAnchor.transform).rotation
                 let skeleton = Skeleton(for: bodyAnchor)
                 skeletonAnchor.addChild(skeleton)
                 scene?.addAnchor(skeletonAnchor)
                 self.skeleton = skeleton
-                self.skeletonAnchor = skeletonAnchor
             }
         }
     }
@@ -120,9 +118,7 @@ extension BrainPower: ARSessionDelegate {
     public func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
         for anchor in anchors {
             if let bodyAnchor = anchor as? ARBodyAnchor {
-                let rotation = Transform(matrix: bodyAnchor.transform).rotation
-                skeletonAnchor?.position = simd_make_float3(bodyAnchor.transform.columns.3)
-                skeletonAnchor?.orientation = rotation
+                skeletonAnchor.setTransformMatrix(bodyAnchor.transform, relativeTo: nil)
                 skeleton?.update(with: bodyAnchor)
             }
         }
